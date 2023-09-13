@@ -13,6 +13,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 find_package(Boost REQUIRED filesystem system)
 include_directories(${BOOST_INCLUDE_DIRS})
 
+find_package(jsoncpp REQUIRED)
+include_directories(${JSONCPP_INCLUDE_DIRS})
+
 find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 
@@ -27,5 +30,5 @@ add_library(${PROJECT_NAME} STATIC ${PARSER_PATH})
 target_link_libraries(${PROJECT_NAME}  ${PCL_LIBRARIES} ${OpenCV_LIBS} ${Boost_SYSTEM_LIBRARY})
 
 add_executable(run_lidar2camera src/run_lidar2camera.cpp )
-target_link_libraries(run_lidar2camera ${PCL_LIBRARIES} ${OpenCV_LIBS} ${PROJECT_NAME} libjsoncpp.a)
+target_link_libraries(run_lidar2camera ${PCL_LIBRARIES} ${OpenCV_LIBS} ${PROJECT_NAME} ${JSONCPP_LIBRARIES})
 
