@@ -23,9 +23,6 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 # Eigen
 include_directories(${EIGEN_ROOT})
 
-# Jsoncpp
-find_package(jsoncpp REQUIRED)
-
 # Link local libraries
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/src)
