@@ -25,7 +25,6 @@ include_directories(${EIGEN_ROOT})
 
 # Jsoncpp
 find_package(jsoncpp REQUIRED)
-include_directories(${JSONCPP_INCLUDE_DIRS})
 
 # Link local libraries
 include_directories(${PROJECT_SOURCE_DIR}/include)
