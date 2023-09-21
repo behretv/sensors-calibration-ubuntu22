@@ -26,20 +26,18 @@ const double eps = 1.0e-6;
 
 Calibrator::Calibrator() { registrator_.reset(new ICPRegistrator); }
 
-void Calibrator::LoadCalibrationData(
-    const std::map<int32_t, pcl::PointCloud<pcl::PointXYZI>> lidar_points,
-    const std::map<int32_t, InitialExtrinsic> extrinsics) {
+void Calibrator::LoadCalibrationData(const std::map<int32_t, pcl::PointCloud<pcl::PointXYZI>> lidar_points,
+                                     const std::map<int32_t, InitialExtrinsic> extrinsics)
+{
   pcs_ = lidar_points;
-  for (auto src : extrinsics) {
+  for (auto src : extrinsics)
+  {
     int32_t device_id = src.first;
     InitialExtrinsic extrinsic = src.second;
     Eigen::Matrix3d rotation;
-    Eigen::AngleAxisd Rx(
-        Eigen::AngleAxisd(extrinsic.euler_angles[0], Eigen::Vector3d::UnitX()));
-    Eigen::AngleAxisd Ry(
-        Eigen::AngleAxisd(extrinsic.euler_angles[1], Eigen::Vector3d::UnitY()));
-    Eigen::AngleAxisd Rz(
-        Eigen::AngleAxisd(extrinsic.euler_angles[2], Eigen::Vector3d::UnitZ()));
+    Eigen::AngleAxisd Rx(Eigen::AngleAxisd(extrinsic.euler_angles[0], Eigen::Vector3d::UnitX()));
+    Eigen::AngleAxisd Ry(Eigen::AngleAxisd(extrinsic.euler_angles[1], Eigen::Vector3d::UnitY()));
+    Eigen::AngleAxisd Rz(Eigen::AngleAxisd(extrinsic.euler_angles[2], Eigen::Vector3d::UnitZ()));
     rotation = Rz * Ry * Rx;
     Eigen::Matrix3d rot = rotation;
     Eigen::Matrix4d init_ext = Eigen::Matrix4d::Identity();
@@ -49,7 +47,8 @@ void Calibrator::LoadCalibrationData(
   }
 }
 
-void Calibrator::Calibrate() {
+void Calibrator::Calibrate()
+{
   Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
   Eigen::Matrix4d curr_transform = Eigen::Matrix4d::Identity();
 
@@ -58,69 +57,51 @@ void Calibrator::Calibrate() {
   pcl::PointCloud<pcl::PointXYZI> master_pc = master_iter->second;
   pcl::PointCloud<pcl::PointXYZI>::Ptr master_pc_ptr = master_pc.makeShared();
   PlaneParam master_gplane;
-  pcl::PointCloud<pcl::PointXYZI>::Ptr master_gcloud(
-      new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr master_ngcloud(
-      new pcl::PointCloud<pcl::PointXYZI>);
-  bool ret = GroundPlaneExtraction(master_pc_ptr, master_gcloud, master_ngcloud,
-                                   master_gplane);
-  if (!ret) {
+  pcl::PointCloud<pcl::PointXYZI>::Ptr master_gcloud(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr master_ngcloud(new pcl::PointCloud<pcl::PointXYZI>);
+  bool ret = GroundPlaneExtraction(master_pc_ptr, master_gcloud, master_ngcloud, master_gplane);
+  if (!ret)
+  {
     LOGE("ground plane extraction failed.\n");
     return;
   }
   registrator_->SetTargetCloud(master_gcloud, master_ngcloud, master_pc_ptr);
-  Eigen::Vector3d t_mp(0, 0,
-                       -master_gplane.intercept / master_gplane.normal(2));
+  Eigen::Vector3d t_mp(0, 0, -master_gplane.intercept / master_gplane.normal(2));
 
-  for (auto iter = pcs_.begin(); iter != pcs_.end(); iter++) {
+  for (auto iter = pcs_.begin(); iter != pcs_.end(); iter++)
+  {
     int32_t slave_id = iter->first;
-    if (slave_id == master_id)
-      continue;
+    if (slave_id == master_id) continue;
     pcl::PointCloud<pcl::PointXYZI> slave_pc = iter->second;
     pcl::PointCloud<pcl::PointXYZI> slave_original_pc = slave_pc;
-    if (init_extrinsics_.find(slave_id) == init_extrinsics_.end()) {
+    if (init_extrinsics_.find(slave_id) == init_extrinsics_.end())
+    {
       LOGE("cannot find the init extrinsic, id: %d\n", slave_id);
       return;
     }
     Eigen::Matrix4d init_ext = init_extrinsics_[slave_id];
     pcl::PointCloud<pcl::PointXYZI>::Ptr slave_pc_ptr = slave_pc.makeShared();
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_after_Condition(
-        new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_after_Condition(new pcl::PointCloud<pcl::PointXYZI>);
     PlaneParam slave_gplane;
-    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_gcloud(
-        new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_ngcloud(
-        new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_gcloud(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_ngcloud(new pcl::PointCloud<pcl::PointXYZI>);
 
     // earse the points close to LiDAR
-    if (slave_id) {
-
-      pcl::ConditionAnd<pcl::PointXYZI>::Ptr range_condition(
-          new pcl::ConditionAnd<pcl::PointXYZI>());
-      range_condition->addComparison(
-          pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-              new pcl::FieldComparison<pcl::PointXYZI>(
-                  "x", pcl::ComparisonOps::GT, -1)));
-      range_condition->addComparison(
-          pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-              new pcl::FieldComparison<pcl::PointXYZI>(
-                  "x", pcl::ComparisonOps::LT, 1))); //
-      range_condition->addComparison(
-          pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-              new pcl::FieldComparison<pcl::PointXYZI>(
-                  "y", pcl::ComparisonOps::GT, -1.0)));
-      range_condition->addComparison(
-          pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-              new pcl::FieldComparison<pcl::PointXYZI>(
-                  "y", pcl::ComparisonOps::LT, 1)));
-      range_condition->addComparison(
-          pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-              new pcl::FieldComparison<pcl::PointXYZI>(
-                  "z", pcl::ComparisonOps::GT, -1)));
-      range_condition->addComparison(
-          pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-              new pcl::FieldComparison<pcl::PointXYZI>(
-                  "z", pcl::ComparisonOps::LT, 1)));
+    if (slave_id)
+    {
+      pcl::ConditionAnd<pcl::PointXYZI>::Ptr range_condition(new pcl::ConditionAnd<pcl::PointXYZI>());
+      range_condition->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
+          new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::GT, -1)));
+      range_condition->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
+          new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::LT, 1)));  //
+      range_condition->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
+          new pcl::FieldComparison<pcl::PointXYZI>("y", pcl::ComparisonOps::GT, -1.0)));
+      range_condition->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
+          new pcl::FieldComparison<pcl::PointXYZI>("y", pcl::ComparisonOps::LT, 1)));
+      range_condition->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
+          new pcl::FieldComparison<pcl::PointXYZI>("z", pcl::ComparisonOps::GT, -1)));
+      range_condition->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
+          new pcl::FieldComparison<pcl::PointXYZI>("z", pcl::ComparisonOps::LT, 1)));
 
       pcl::ConditionalRemoval<pcl::PointXYZI> condition;
       condition.setCondition(range_condition);
@@ -135,20 +116,22 @@ void Calibrator::Calibrate() {
       std::vector<float> pointNKNSquaredDistance(K);
       std::vector<pcl::PointXYZI> DeleteData;
       int num = 0;
-      for (auto iter = cloud_after_Condition->begin();
-           iter != cloud_after_Condition->end(); iter++) {
+      for (auto iter = cloud_after_Condition->begin(); iter != cloud_after_Condition->end(); iter++)
+      {
         searchPoint.x = iter->x;
         searchPoint.y = iter->y;
         searchPoint.z = iter->z;
         kdtree.setInputCloud(slave_pc_ptr);
-        num = kdtree.nearestKSearch(searchPoint, K, pointIdxNKNSearch,
-                                    pointNKNSquaredDistance);
-        if (num > 0) {
-          if (sqrt(pointNKNSquaredDistance[0]) < eps) {
+        num = kdtree.nearestKSearch(searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance);
+        if (num > 0)
+        {
+          if (sqrt(pointNKNSquaredDistance[0]) < eps)
+          {
             auto iterB = slave_pc_ptr->begin() + pointIdxNKNSearch[0];
             slave_pc_ptr->erase(iterB);
             DeleteData.push_back(searchPoint);
-            if (slave_pc_ptr->size() == 0) {
+            if (slave_pc_ptr->size() == 0)
+            {
               break;
             }
             searchPoint.x = 0;
@@ -162,41 +145,38 @@ void Calibrator::Calibrate() {
       }
     }
 
-    ret = GroundPlaneExtraction(slave_pc_ptr, slave_gcloud, slave_ngcloud,
-                                slave_gplane);
-    if (!ret) {
+    ret = GroundPlaneExtraction(slave_pc_ptr, slave_gcloud, slave_ngcloud, slave_gplane);
+    if (!ret)
+    {
       LOGE("ground plane extraction failed.\n");
       continue;
     }
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_original_pc_ptr =
-        slave_original_pc.makeShared();
+    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_original_pc_ptr = slave_original_pc.makeShared();
     PlaneParam slave_original_gplane;
-    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_original_ngcloud(
-        new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_original_gcloud(
-        new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_original_ngcloud(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr slave_original_gcloud(new pcl::PointCloud<pcl::PointXYZI>);
 
-    ret = GroundPlaneExtraction(slave_original_pc_ptr, slave_original_gcloud,
-                                slave_original_ngcloud, slave_original_gplane);
-    registrator_->SetSourceCloud(slave_original_gcloud, slave_original_ngcloud,
-                                 slave_original_pc_ptr);
+    ret = GroundPlaneExtraction(slave_original_pc_ptr, slave_original_gcloud, slave_original_ngcloud,
+                                slave_original_gplane);
+    registrator_->SetSourceCloud(slave_original_gcloud, slave_original_ngcloud, slave_original_pc_ptr);
 
     // ground normal direction
-    Eigen::Vector3f ground_point(
-        0, 0, (slave_gplane.intercept) / (-slave_gplane.normal(2)));
+    Eigen::Vector3f ground_point(0, 0, (slave_gplane.intercept) / (-slave_gplane.normal(2)));
     Eigen::Vector3f point2plane_vector;
     int Ontheground = 0;
     int Undertheground = 0;
-    for (auto iter = slave_ngcloud->begin(); iter < slave_ngcloud->end() - 100;
-         iter += 100) {
+    for (auto iter = slave_ngcloud->begin(); iter < slave_ngcloud->end() - 100; iter += 100)
+    {
       Eigen::Vector3f samplePoint(iter->x, iter->y, iter->z);
       point2plane_vector = samplePoint - ground_point;
-      if ((point2plane_vector(0) * slave_gplane.normal(0) +
-           point2plane_vector(1) * slave_gplane.normal(1) +
-           point2plane_vector(2) * slave_gplane.normal(2)) >= 0) {
+      if ((point2plane_vector(0) * slave_gplane.normal(0) + point2plane_vector(1) * slave_gplane.normal(1) +
+           point2plane_vector(2) * slave_gplane.normal(2)) >= 0)
+      {
         Ontheground++;
-      } else {
+      }
+      else
+      {
         Undertheground++;
       }
     }
@@ -206,8 +186,7 @@ void Calibrator::Calibrate() {
     double alpha2 = std::acos(slave_gplane.normal.dot(master_gplane.normal));
     Eigen::Matrix3d R_ms;
     R_ms = Eigen::AngleAxisd(alpha2, rot_axis2);
-    Eigen::Vector3d slave_intcpt_local(
-        0, 0, -slave_gplane.intercept / slave_gplane.normal(2));
+    Eigen::Vector3d slave_intcpt_local(0, 0, -slave_gplane.intercept / slave_gplane.normal(2));
     Eigen::Vector3d slave_intcpt_master = R_ms * slave_intcpt_local;
     Eigen::Vector3d t_ms(0, 0, t_mp(2) - slave_intcpt_master(2));
 
@@ -216,15 +195,15 @@ void Calibrator::Calibrate() {
     T_ms.block<3, 3>(0, 0) = R_ms;
 
     double z_error = std::fabs(t_ms(2) - init_ext(2, 3));
-    if (z_error > 0.5) {
+    if (z_error > 0.5)
+    {
       slave_gplane.normal = -slave_gplane.normal;
       slave_gplane.intercept = -slave_gplane.intercept;
       rot_axis2 = slave_gplane.normal.cross(master_gplane.normal);
       rot_axis2.normalize();
       alpha2 = std::acos(slave_gplane.normal.dot(master_gplane.normal));
       R_ms = Eigen::AngleAxisd(alpha2, rot_axis2);
-      slave_intcpt_local = Eigen::Vector3d(
-          0, 0, -slave_gplane.intercept / slave_gplane.normal(2));
+      slave_intcpt_local = Eigen::Vector3d(0, 0, -slave_gplane.intercept / slave_gplane.normal(2));
       slave_intcpt_master = R_ms * slave_intcpt_local;
       t_ms = Eigen::Vector3d(0, 0, t_mp(2) - slave_intcpt_master(2));
       T_ms.block<3, 1>(0, 3) = t_ms;
@@ -238,10 +217,10 @@ void Calibrator::Calibrate() {
   }
 }
 
-bool Calibrator::GroundPlaneExtraction(
-    const pcl::PointCloud<pcl::PointXYZI>::Ptr &in_cloud,
-    pcl::PointCloud<pcl::PointXYZI>::Ptr g_cloud,
-    pcl::PointCloud<pcl::PointXYZI>::Ptr ng_cloud, PlaneParam &plane) {
+bool Calibrator::GroundPlaneExtraction(const pcl::PointCloud<pcl::PointXYZI>::Ptr &in_cloud,
+                                       pcl::PointCloud<pcl::PointXYZI>::Ptr g_cloud,
+                                       pcl::PointCloud<pcl::PointXYZI>::Ptr ng_cloud, PlaneParam &plane)
+{
   pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
   pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
   pcl::SACSegmentation<pcl::PointXYZI> seg;
@@ -251,7 +230,8 @@ bool Calibrator::GroundPlaneExtraction(
   seg.setDistanceThreshold(0.2);
   seg.setInputCloud(in_cloud);
   seg.segment(*inliers, *coefficients);
-  if (inliers->indices.size() == 0) {
+  if (inliers->indices.size() == 0)
+  {
     PCL_ERROR("Could not estimate a planar model for the given dataset.");
     return false;
   }
@@ -268,6 +248,4 @@ bool Calibrator::GroundPlaneExtraction(
   return true;
 }
 
-std::map<int32_t, Eigen::Matrix4d> Calibrator::GetFinalTransformation() {
-  return refined_extrinsics_;
-}
+std::map<int32_t, Eigen::Matrix4d> Calibrator::GetFinalTransformation() { return refined_extrinsics_; }

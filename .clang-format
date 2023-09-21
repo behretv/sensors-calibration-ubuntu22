@@ -1,0 +1,30 @@
+---
+# We'll use defaults from the Google style, but with 4 columns indentation.
+BasedOnStyle: Google
+ColumnLimit: 120
+---
+Language: Cpp
+# Make more line breaks and less single line statments
+BreakBeforeBraces: Allman
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false # deprecated will be replaced by option below
+# PackConstructorInitializers: Never
+
+# Include
+IncludeCategories:
+    - Regex: "^<ext/.*\\.h>"
+      Priority: 0
+      CaseSensitive: false
+    - Regex: "^<[a-z]+>"
+      Priority: 1
+      CaseSensitive: false
+    - Regex: "^<.*\\.h>"
+      Priority: 1
+      CaseSensitive: false
+    - Regex: "^<.*"
+      Priority: 2
+      CaseSensitive: false
+    - Regex: ".*"
+      Priority: 3
+      CaseSensitive: false
+IncludeBlocks: Regroup
