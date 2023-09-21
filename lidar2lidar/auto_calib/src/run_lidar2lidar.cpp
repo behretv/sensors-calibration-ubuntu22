@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 
     // Create file
     file_stream << "device_id: " << slave_id << std::endl;
-    file_stream << "(Roll,Pitch,Yaw,tx,tty,tz):" << euler_angles << translation << std::endl;
+    file_stream << "(Roll,Pitch,Yaw,tx,ty,tz): " << euler_angles.transpose() << " " << translation.transpose() << std::endl;
   }
   file_stream.close();
   return 0;
