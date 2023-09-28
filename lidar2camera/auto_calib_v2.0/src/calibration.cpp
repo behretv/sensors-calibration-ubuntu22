@@ -24,7 +24,7 @@ void Create_ColorBar()
         pColor[ba * 3 + 1] = S[s / 13];
         pColor[ba * 3 + 2] = V[v / 13 / 3];
     }
-    cv::cvtColor(color, color_bar, CV_HSV2BGR);
+    cv::cvtColor(color, color_bar, cv::COLOR_HSV2BGR);
 }
 
 Calibrator::Calibrator(const std::string mask_dir,
@@ -147,7 +147,7 @@ void Calibrator::ProcessPointcloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr pc
 void Calibrator::Segment_pc(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud,
                             pcl::PointCloud<pcl::Normal>::Ptr normals,
                             std::vector<pcl::PointIndices> &seg_indices)
-{   
+{
     // compute_normals
     pcl::NormalEstimation<pcl::PointXYZI, pcl::Normal> norm_est;
     pcl::search::KdTree<pcl::PointXYZI>::Ptr tree(
@@ -216,7 +216,7 @@ void Calibrator::Segment_pc(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud,
 }
 
 void Calibrator::Calibrate()
-{   
+{
     VisualProjection(init_extrinsic_, img_file_, "init_proj.png");
     VisualProjectionSegment(init_extrinsic_, img_file_, "init_proj_seg.png");
     VisualProjection(extrinsic_, img_file_, "error_proj.png");
@@ -281,7 +281,7 @@ bool Calibrator::CalScore(Eigen::Matrix4f T, float &score, bool is_coarse)
                     break;
             }
         }
-    }    
+    }
 
     // calculate consistency
     std::vector<float> normal_sims, intensity_sims, segment_sims;
@@ -294,7 +294,7 @@ bool Calibrator::CalScore(Eigen::Matrix4f T, float &score, bool is_coarse)
             continue;
         int points_on_mask = mask_intensity[i].size();
         if (points_on_mask < 20)
-            continue;     
+            continue;
         float adjust = 1 - 0.5 * pow(points_on_mask, -0.5);
         // float adjust = 1;
 
@@ -373,7 +373,7 @@ bool Calibrator::CalScore(Eigen::Matrix4f T, float &score, bool is_coarse)
 void Calibrator::BruteForceSearch(int rpy_range, float rpy_resolution, int xyz_range, float xyz_resolution, bool is_coarse)
 {
     std::cout << "Start brute-force search around [-" << rpy_range * rpy_resolution << ","
-              << rpy_range * rpy_resolution << "] degree and [-" << xyz_range * xyz_resolution 
+              << rpy_range * rpy_resolution << "] degree and [-" << xyz_range * xyz_resolution
               << "," << xyz_range * xyz_resolution << "] m" << std::endl;
     float best_var[6] = {0};
     float score;
@@ -395,7 +395,7 @@ void Calibrator::BruteForceSearch(int rpy_range, float rpy_resolution, int xyz_r
                     << " " << best_var[3] << " " << best_var[4] << " " << best_var[5]
                     << std::endl;
         }
-    }    
+    }
     std::cout << "best var:" << best_var[0] << " " << best_var[1] << " " << best_var[2] << " " << best_var[3] << " "
               << best_var[4] << " " << best_var[5] << std::endl;
     Eigen::Matrix4f deltaT = Util::GetDeltaT(best_var);
