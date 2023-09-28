@@ -1,5 +1,7 @@
 #include <chrono> // NOLINT
+#include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <pcl/common/transforms.h>
 #include <thread> // NOLINT

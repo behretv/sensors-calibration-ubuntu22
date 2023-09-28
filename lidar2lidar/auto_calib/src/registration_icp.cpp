@@ -92,7 +92,8 @@ double ICPRegistrator::CalculateICPError(const pcl::KdTreeFLANN<pcl::PointXYZI> 
     std::vector<float> distances;
     int k = 1;
     pcl::PointXYZI point = trans_cloud.points[j];
-    int size = kdtree.nearestKSearch(point, k, indices, distances);
+    auto size = kdtree.nearestKSearch(point, k, indices, distances);
+    printf("size: %d\n", size);
     if (distances.size() > 0)
     {
       dist_sum += distances[0];
@@ -142,8 +143,8 @@ void ICPRegistrator::computeNormals(const pcl::PointCloud<pcl::PointXYZI>::Ptr i
   norm_est.setInputCloud(in_pts);
   norm_est.compute(*out_pts);
 
-  LOGI("normal point cloud number: %d\n", out_pts->size());
-  for (int i = 0; i < out_pts->size(); ++i)
+  LOGI("normal point cloud number: %ld\n", out_pts->size());
+  for (size_t i = 0; i < out_pts->size(); ++i)
   {
     (*out_pts)[i].x = (*in_pts)[i].x;
     (*out_pts)[i].y = (*in_pts)[i].y;
