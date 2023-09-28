@@ -33,15 +33,21 @@ void Optimizer::Calibrate(
   // SaveProjectResult("before.png", distance_img, original_cloud);
   float var[6] = {0}, bestVal[6] = {0}, best_extrinsic_vec[6] = {0};
   std::string varName[6] = {"roll", "pitch", "yaw", "tx", "ty", "tz"};
-  int direction[3] = {1, 0, -1};
   float maxPointCnt = CostFunction(var, distance_img, register_cloud);
 
   std::cout << "before loss: " << maxPointCnt << std::endl;
 
-  int iteration_num = 0;
   Eigen::Matrix3d rotation_matrix = curr_optim_extrinsic_.block<3, 3>(0, 0);
   Eigen::Vector3d ea = rotation_matrix.eulerAngles(2, 1, 0);
+  std::cout << "Euler from rotation matrix in roll, pitch, yaw\n"
+            << ea << std::endl;
+
+  // Extrinsics
   float target_extrinsic_vec[6] = {0}, curr_optim_extrinsic_vec[6] = {0};
+  std::cout << "Best extrinsic: " << best_extrinsic_vec << std::endl;
+  std::cout << "Target extrinsic: " << target_extrinsic_vec << std::endl;
+  std::cout << "Current extrinsic: " << curr_optim_extrinsic_vec << std::endl;
+
   bool is_violence_search = false;
   if (is_violence_search) {
     float rpy_resolution = 1;
@@ -238,7 +244,7 @@ void Optimizer::random_search_params(int search_count, float delta_x,
                                                           delta_yaw);
   float maxPointCnt =
       CostFunction(var, &register_img_, register_cloud_.makeShared());
-  for (size_t i = 0; i < search_count; i++) {
+  for (int i = 0; i < search_count; i++) {
     var[0] = distribution_x(generator);
     var[1] = distribution_y(generator);
     var[2] = distribution_z(generator);
