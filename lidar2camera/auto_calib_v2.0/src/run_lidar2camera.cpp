@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     std::string data_folder = argv[1];
     std::string lidar_file, img_file, calib_file;
     std::string mask_dir = data_folder + "/masks/";
-    std::string error_file = "./data/initial_error.txt";
+    std::string error_file = "./config/initial_error.txt";
 
     DIR *dir;
     struct dirent *ptr;
