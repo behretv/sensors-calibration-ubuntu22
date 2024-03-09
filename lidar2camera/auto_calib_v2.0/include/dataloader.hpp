@@ -10,6 +10,9 @@ class DataLoader
   static void LoadMaskFile(const std::string mask_dir, const Eigen::MatrixXf intrinsic, const std::vector<double> dist,
                            cv::Mat &masks, std::vector<int> &mask_point_num)
   {
+    // Log message
+    std::cout << "Loading masks from " << mask_dir << "..." << std::flush;
+
     std::vector<std::string> mask_files;
     DIR *dir;
     struct dirent *ptr;
@@ -68,17 +71,24 @@ class DataLoader
       // std::cout << n_white << std::endl;
       mask_point_num.push_back(n_white);
     }
+
+    std::cout << "\033[32mok\033[0m" << std::endl;
   }
 
   static void LoadCalibFile(const std::string filename, Eigen::MatrixXf &intrinsic, Eigen::Matrix4f &extrinsic,
                             std::vector<double> &dist)
   {
+    // Log message
+    std::cout << "Loading " << filename << "..." << std::flush;
+
+    // Check if file can be opened
     std::ifstream file(filename);
     if (!file.is_open())
     {
       std::cout << "open file " << filename << " failed." << std::endl;
       exit(1);
     }
+
     std::string line, tmpStr;
     getline(file, line);
     std::stringstream ss(line);
@@ -116,15 +126,21 @@ class DataLoader
     ss >> tmpStr >> extrinsic(0, 0) >> extrinsic(0, 1) >> extrinsic(0, 2) >> extrinsic(0, 3) >> extrinsic(1, 0) >>
         extrinsic(1, 1) >> extrinsic(1, 2) >> extrinsic(1, 3) >> extrinsic(2, 0) >> extrinsic(2, 1) >>
         extrinsic(2, 2) >> extrinsic(2, 3);
+
+    std::cout << "\033[32mok\033[0m" << std::endl;
   }
 
   static void LoadLidarFile(const std::string filename, pcl::PointCloud<pcl::PointXYZI>::Ptr pc)
   {
+    // Log message
+    std::cout << "Loading " << filename << "..." << std::flush;
+
     if (pcl::io::loadPCDFile(filename, *pc) < 0)
     {
       std::cout << "[ERROR] cannot open pcd_file: " << filename << "\n";
       exit(1);
     }
+    std::cout << "\033[32mok\033[0m" << std::endl;
   }
 
  private:
