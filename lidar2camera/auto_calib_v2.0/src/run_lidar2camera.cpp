@@ -14,18 +14,9 @@ void SaveExtrinsic(Eigen::Matrix4f T, const std::string &file_name)
     std::cerr << "open file " << file_name << " failed. Cannot write calib result." << std::endl;
     exit(1);
   }
-  ofs << "Extrinsic = " << std::endl;
-  ofs << "[" << T(0, 0) << "," << T(0, 1) << "," << T(0, 2) << "," << T(0, 3) << "]," << std::endl
-      << "[" << T(1, 0) << "," << T(1, 1) << "," << T(1, 2) << "," << T(1, 3) << "]," << std::endl
-      << "[" << T(2, 0) << "," << T(2, 1) << "," << T(2, 2) << "," << T(2, 3) << "]," << std::endl
-      << "[" << T(3, 0) << "," << T(3, 1) << "," << T(3, 2) << "," << T(3, 3) << "]" << std::endl;
-
-  ofs << "Roll = " << RAD2DEG(Util::GetRoll(T)) << std::endl
-      << "Pitch = " << RAD2DEG(Util::GetPitch(T)) << std::endl
-      << "Yaw = " << RAD2DEG(Util::GetYaw(T)) << std::endl
-      << "x = " << Util::GetX(T) << std::endl
-      << "y = " << Util::GetY(T) << std::endl
-      << "z = " << Util::GetZ(T) << std::endl;
+  ofs << "(Roll,Pitch,Yaw,tx,ty,tz):";
+  ofs << " " << Util::GetRoll(T) << " " << Util::GetPitch(T) << " " << Util::GetYaw(T);
+  ofs << " " << Util::GetX(T) << " " << Util::GetY(T) << " " << Util::GetZ(T) << std::endl;
   ofs.close();
 
   std::cout << "\033[94mSaved: " << file_name << "\033[0m" << std::endl;
