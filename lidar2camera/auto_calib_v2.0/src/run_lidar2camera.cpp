@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
   std::string data_folder = argv[1];
   std::string lidar_file, img_file, calib_file;
-  std::string mask_dir = data_folder + "/masks/";
+  std::string mask_dir = data_folder + "/calib/";
   std::string error_file = data_folder + "/initial_error.txt";
   std::string result_file = data_folder + "/refined_extrinsics.txt";
 

@@ -1,18 +1,4 @@
 {
-    "image": "gitlab.lrz.de:5005/messtechnik-labor/barcs/docker/open-calib/amd-lidar2lidar",
-	"postCreateCommand": "export force_color_prompt=yes && bash",
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ms-vscode.cpptools-extension-pack",
-				"jbenden.c-cpp-flylint",
-				"xaver.clang-format",
-				"akiramiyakoda.cppincludeguard",
-				"streetsidesoftware.code-spell-checker",
-				"GitHub.copilot",
-				"eamodio.gitlens",
-				"oderwat.indent-rainbow"
-			]
-		}
-	}
+    "image": "gitlab.lrz.de:5005/messtechnik-labor/barcs/docker/open-calib/amd-lidar2camera",
+	"postCreateCommand": "export force_color_prompt=yes && bash"
 }
