@@ -474,7 +474,7 @@ void Calibrator::VisualProjection(Eigen::Matrix4f T, std::string img_file, std::
     cv::circle(img_color, point, 3, cv::Scalar(0, 255, 0), -1, 0);
   }
   cv::imwrite(save_name, img_color);
-  std::cout << "Image saved: " << save_name << std::endl;
+  std::cout << "\033[94mSaved: " << save_name << "\033[0m" << std::endl;
 }
 
 void Calibrator::VisualProjectionSegment(Eigen::Matrix4f T, std::string img_file, std::string save_name)
@@ -510,7 +510,7 @@ void Calibrator::VisualProjectionSegment(Eigen::Matrix4f T, std::string img_file
     }
   }
   cv::imwrite(save_name, img_color);
-  std::cout << "Image saved: " << save_name << std::endl;
+  std::cout << "\033[94mSaved: " << save_name << "\033[0m" << std::endl;
 }
 
 bool Calibrator::ProjectOnImage(const Eigen::Vector4f &vec, const Eigen::Matrix4f &T, int &x, int &y, int margin)

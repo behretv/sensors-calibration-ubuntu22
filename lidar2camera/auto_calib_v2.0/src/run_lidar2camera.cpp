@@ -28,7 +28,7 @@ void SaveExtrinsic(Eigen::Matrix4f T, const std::string &file_name)
       << "z = " << Util::GetZ(T) << std::endl;
   ofs.close();
 
-  std::cout << "Calibration result was saved to " << file_name << std::endl;
+  std::cout << "\033[94mSaved: " << file_name << "\033[0m" << std::endl;
 }
 
 int main(int argc, char *argv[])
