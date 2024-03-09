@@ -23,6 +23,8 @@ unsigned char color_map[10][3] = {{255, 255, 255}, // "white"
 void LoadPointCloud(
     const std::string &filename,
     std::map<int32_t, pcl::PointCloud<pcl::PointXYZI>> &lidar_points) {
+    // Load point cloud
+    std::cout << "Loading " << filename << "..." << std::flush;
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cout << "[ERROR] open file " << filename << " failed."
@@ -48,10 +50,13 @@ void LoadPointCloud(
         }
         lidar_points.insert(std::make_pair(device_id, *cloud));
     }
+    std::cout << "\033[32mok\033[0m" << std::endl;
 }
 
 void LoadCalibFile(const std::string &filename,
                    std::map<int32_t, InitialExtrinsic> &calib_extrinsic) {
+    // Loading calib file
+    std::cout << "Loading " << filename << "..." << std::flush;
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cout << "open file " << filename << " failed." << std::endl;
@@ -76,6 +81,7 @@ void LoadCalibFile(const std::string &filename,
         extrinsic.euler_angles[2] = extrinsic.euler_angles[2] * degree_2_radian;
         calib_extrinsic.insert(std::make_pair(device_id, extrinsic));
     }
+    std::cout << "\033[32mok\033[0m" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -87,12 +93,16 @@ int main(int argc, char *argv[]) {
     }
     auto lidar_file = argv[1];
     auto calib_file = argv[2];
+
+    // Declare variables
     std::map<int32_t, pcl::PointCloud<pcl::PointXYZI>> lidar_points;
-    LoadPointCloud(lidar_file, lidar_points);
     std::map<int32_t, InitialExtrinsic> extrinsics;
+
+    // Load data
+    LoadPointCloud(lidar_file, lidar_points);
     LoadCalibFile(calib_file, extrinsics);
 
-    // calibration
+    // Calibration
     Calibrator calibrator;
     calibrator.LoadCalibrationData(lidar_points, extrinsics);
     auto time_begin = std::chrono::steady_clock::now();
