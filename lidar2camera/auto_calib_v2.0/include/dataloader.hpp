@@ -111,7 +111,7 @@ class DataLoader
     }
     else
     {
-      std::cout << "wrong number of elements " << elements.size() << "..." << std::endl;
+      std::cout << "wrong number of elements " << elements.size() << "..." << std::flush;
       std::cout << "\033[31mfail\033[0m" << std::endl;
       exit(1);
     }

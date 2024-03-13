@@ -35,13 +35,14 @@ int main(int argc, const char *argv[])
   }
 
   std::string data_folder = argv[1];
-  std::string lidar_file, img_file, calib_file;
+  std::string lidar_file, img_file;
   std::string mask_dir = data_folder + "/calib/";
   std::string error_file = data_folder + "/initial_error.txt";
   std::string result_file = data_folder + "/refined_extrinsics.txt";
+  std::string calib_file = data_folder + "/calib.txt";
 
   // Load data from directory
-  std::cout << "Load data from " << data_folder << std::flush;
+  std::cout << "Load data from " << data_folder << "..." << std::flush;
   DIR *dir;
   struct dirent *ptr;
   if ((dir = opendir(data_folder.c_str())) == NULL)
@@ -63,8 +64,6 @@ int main(int argc, const char *argv[])
       img_file = data_folder + '/' + ptr->d_name;
     else if (suffix == ".pcd")
       lidar_file = data_folder + '/' + ptr->d_name;
-    else if (suffix == ".txt")
-      calib_file = data_folder + '/' + ptr->d_name;
     ptr++;
   }
   std::cout << "\033[32mok\033[0m" << std::endl;
