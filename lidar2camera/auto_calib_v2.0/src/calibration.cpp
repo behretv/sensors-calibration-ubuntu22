@@ -41,14 +41,18 @@ Calibrator::Calibrator(const std::string mask_dir, const std::string lidar_file,
   N_MASK = mask_point_num_.size();
 
   // add error to the inital extrinsic
+  std::cout << "Loading error:" << error_file << "..." << std::flush;
   float var[6] = {0};
   std::ifstream file(error_file);
   if (!file.is_open())
   {
-    std::cout << "open file " << error_file << " failed." << std::endl;
+    std::cout << "\033[31mfail\033[0m" << std::endl;
     exit(1);
   }
   file >> var[0] >> var[1] >> var[2] >> var[3] >> var[4] >> var[5];
+  std::cout << "\033[32mok\033[0m" << std::endl;
+
+
   std::cout << "Initial error set to (r p y x y z):" << var[0] << " " << var[1] << " " << var[2] << " " << var[3] << " "
             << var[4] << " " << var[5] << std::endl;
   Eigen::Matrix4f deltaT = Util::GetDeltaT(var);

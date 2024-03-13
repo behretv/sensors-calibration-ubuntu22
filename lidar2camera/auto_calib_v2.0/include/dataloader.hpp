@@ -18,7 +18,8 @@ class DataLoader
     struct dirent *ptr;
     if ((dir = opendir(mask_dir.c_str())) == NULL)
     {
-      std::cout << "Open dir " << mask_dir << " error !" << std::endl;
+      std::cout << "open dir..."
+                << "\033[31mfail\033[0m" << std::endl;
       exit(1);
     }
     while ((ptr = readdir(dir)) != NULL)
@@ -29,7 +30,8 @@ class DataLoader
     }
     if (mask_files.size() == 0)
     {
-      std::cout << "No valid mask file under dir." << std::endl;
+      std::cout << "no valid mask file under dir..."
+                << "\033[31mfail\033[0m" << std::endl;
       exit(1);
     }
     sort(mask_files.begin(), mask_files.end());
@@ -75,17 +77,17 @@ class DataLoader
     std::cout << "\033[32mok\033[0m" << std::endl;
   }
 
-  static void LoadCalibFile(const std::string filename, Eigen::MatrixXf &intrinsic, Eigen::Matrix4f &extrinsic,
+  static void LoadCalibFile(const std::string &filename, Eigen::MatrixXf &intrinsic, Eigen::Matrix4f &extrinsic,
                             std::vector<double> &dist)
   {
     // Log message
-    std::cout << "Loading " << filename << "..." << std::flush;
+    std::cout << "Loading calib: " << filename << "..." << std::flush;
 
     // Check if file can be opened
     std::ifstream file(filename);
     if (!file.is_open())
     {
-      std::cout << "open file " << filename << " failed." << std::endl;
+      std::cout << "\033[31mfail\033[0m" << std::endl;
       exit(1);
     }
 
@@ -109,7 +111,8 @@ class DataLoader
     }
     else
     {
-      std::cout << "Wrong intrinsic parameter number." << std::endl;
+      std::cout << "wrong number of elements " << elements.size() << "..." << std::endl;
+      std::cout << "\033[31mfail\033[0m" << std::endl;
       exit(1);
     }
 
@@ -130,14 +133,14 @@ class DataLoader
     std::cout << "\033[32mok\033[0m" << std::endl;
   }
 
-  static void LoadLidarFile(const std::string filename, pcl::PointCloud<pcl::PointXYZI>::Ptr pc)
+  static void LoadLidarFile(const std::string &filename, pcl::PointCloud<pcl::PointXYZI>::Ptr pc)
   {
     // Log message
     std::cout << "Loading " << filename << "..." << std::flush;
 
     if (pcl::io::loadPCDFile(filename, *pc) < 0)
     {
-      std::cout << "[ERROR] cannot open pcd_file: " << filename << "\n";
+      std::cout << "\033[31mfail\033[0m" << std::endl;
       exit(1);
     }
     std::cout << "\033[32mok\033[0m" << std::endl;

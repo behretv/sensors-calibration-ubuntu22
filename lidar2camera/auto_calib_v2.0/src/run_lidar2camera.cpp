@@ -22,7 +22,7 @@ void SaveExtrinsic(Eigen::Matrix4f T, const std::string &file_name)
   std::cout << "\033[94mSaved: " << file_name << "\033[0m" << std::endl;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
   if (argc != 2)
   {
@@ -40,11 +40,13 @@ int main(int argc, char *argv[])
   std::string error_file = data_folder + "/initial_error.txt";
   std::string result_file = data_folder + "/refined_extrinsics.txt";
 
+  // Load data from directory
+  std::cout << "Load data from " << data_folder << std::flush;
   DIR *dir;
   struct dirent *ptr;
   if ((dir = opendir(data_folder.c_str())) == NULL)
   {
-    std::cout << "Open dir " << mask_dir << " error !" << std::endl;
+    std::cout << "\033[31mfail\033[0m" << std::endl;
     exit(1);
   }
   while ((ptr = readdir(dir)) != NULL)
@@ -65,14 +67,24 @@ int main(int argc, char *argv[])
       calib_file = data_folder + '/' + ptr->d_name;
     ptr++;
   }
+  std::cout << "\033[32mok\033[0m" << std::endl;
+  std::cout << "Lidar file: " << lidar_file << std::endl;
+  std::cout << "Image file: " << img_file << std::endl;
+  std::cout << "Calib file: " << calib_file << std::endl;
 
+  // Calibration process
   auto time_begin = std::chrono::steady_clock::now();
   Calibrator calibrator(mask_dir, lidar_file, calib_file, img_file, error_file);
   calibrator.Calibrate(data_folder);
   Eigen::Matrix4f refined_extrinsic = calibrator.GetFinalTransformation();
-  SaveExtrinsic(refined_extrinsic, result_file);
   auto time_end = std::chrono::steady_clock::now();
-  std::cout << "Total calib time: " << std::chrono::duration<double>(time_end - time_begin).count() << "s" << std::endl;
+
+  // Save result
+  SaveExtrinsic(refined_extrinsic, result_file);
+
+  // Log duration
+  std::cout << "Total calib time: " << std::chrono::duration<double>(time_end - time_begin).count() << "s..."
+            << std::flush << "\033[32mok\033[0m" << std::endl;
 
   return 0;
 }
